@@ -17,8 +17,11 @@ migrateup:
 # Migrate down
 migratedown:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
+sqlc:
+	sqlc generate
+
 # Declare all targets as phony
-.PHONY: postgres createdb dropdb migrateup migratedown
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc
 
 # Explanations:
 # 1. The 'postgres' rule sets up a PostgreSQL 12 container with Alpine Linux base.
