@@ -9,8 +9,8 @@ import (
 
 func TestCreateAccount(t *testing.T) {
 	arg := CreateAccountParams{
-		Owner:    "Suleiman",
-		Balance:  54089029,
+		Owner:    "Kenny Worldwide",
+		Balance:  5408902942983873,
 		Currency: "USD",
 	}
 	account, err := testQueries.CreateAccount(context.Background(), arg)
