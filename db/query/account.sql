@@ -5,7 +5,7 @@ INSERT INTO accounts (
     currency
 ) VALUES ($1, $2, $3) RETURNING *;
 
--- name: SelectAccount :one
+-- name: GetAccount :one
 SELECT * FROM accounts
 WHERE id = $1 LIMIT 1;
 
