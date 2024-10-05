@@ -1,7 +1,7 @@
 -- Create accounts table
 CREATE TABLE accounts (
     id bigserial PRIMARY KEY,
-    owner VARCHAR NOT NULL,
+    owner VARCHAR NOT NULL CHECK (owner <> ''),  -- Disallow empty strings
     balance BIGINT NOT NULL,
     currency VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
