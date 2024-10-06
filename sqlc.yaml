@@ -18,6 +18,7 @@ sql:
         emit_prepared_queries: false  # Disable prepared queries for performance
         emit_interface: false         # Disable interface generation
         emit_empty_slices: true       # Emit empty slices instead of nil for empty result sets
+        sql_package: "database/sql"   # Explicitly use database/sql as the driver
         overrides:
           - db_type: "timestamptz"    # Override for PostgreSQL 'timestamptz' type
             go_type: "time.Time"      # Use Go's time.Time type for 'timestamptz'
