@@ -69,3 +69,62 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	// If committing the transaction fails, return the commit error.
 	return tx.Commit() // Commit finalizes the transaction, ensuring all operations inside the transaction are persisted to the database.
 }
+
+// transfer tx transaction, transfer money from one account to another
+// create transfer record, add account entries,and update accounts' balances within a transaction
+
+type TransferTxParams struct {
+	// contains all necessary input parameters to transfer money between two account
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+	Amount        int64 `json:"amount"`
+}
+
+type TransferTxResult struct {
+	// TransferTxResult is the result of the transfer transaction
+	Transfer    Transfer `json:"transfer"`
+	FromAccount Account  `json:"from_account"`
+	ToAccount   Account  `json:"to_account"`
+	FromEntry   Entry    `json:"from_entry"`
+	ToEntry     Entry    `json:"to_entry"`
+}
+
+func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+	// first create an empty result
+	var result TransferTxResult
+
+	// call exectx function to create and run a new db transaction (which?)
+	// call back function now a closure (?), first step to create create a transfer record
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
+			FromAccountID: arg.FromAccountID,
+			ToAccountID:   arg.ToAccountID,
+			Amount:        arg.Amount,
+		})
+
+		if err != nil {
+			return err
+		}
+		// add transfer record to both acocunts
+		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+			FromAccount: arg.FromAccountID,
+			Amount:      -arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+			ToAccount: arg.FromAccountID,
+			Amount:    arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		// update account accounts' balances while locking and preventing potential deadlock
+
+	})
+
+}
