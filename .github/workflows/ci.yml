@@ -24,12 +24,13 @@ jobs:
           POSTGRES_DB: simple_bank
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
-        #Ensure PostgreSQL is ready before tests by running healthcheck
+        # Ensure PostgreSQL is ready before tests by running healthcheck
         options: >-
-          --health-cmd "pg_isready -U postgres"  
+          --health-cmd "pg_isready -U root"  
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        # Uncomment the following if you face connectivity issues in tests
         # ports:
         #   - 5432:5432  
         # volumes:
@@ -40,9 +41,6 @@ jobs:
       # This step pulls down the latest version of the code from the GitHub repository
       - name: Check out the code
         uses: actions/checkout@v4
-        # to create the correct database shema for our app
-      - name: Run Migrations
-        run: make migrateup
 
       # Step 2: Set up Go environment
       # We are using the latest version of Go (1.20) in this case, which you can update as needed
@@ -52,9 +50,25 @@ jobs:
           go-version: '1.20'
         id: go
 
-      # Step 3: Run tests
+      # Step 3: Install golang-migrate
+      # This downloads and installs the appropriate version of golang-migrate
+      - name: Install golang-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/bin/migrate
+          which migrate
+
+      # Step 4: Run migrations to create the correct database schema for the app
+      - name: Run Migrations
+        run: make migrateup
+
+      # Step 5: Run tests
       # The 'make test' command will automatically handle building and testing the code.
       # Go automatically compiles the code before running the tests, so no separate build step is needed.
-      # That's why we're skipping the explicit 'go build' step.
       - name: Run tests
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: simple_bank
+          POSTGRES_HOST: localhost  # or use '127.0.0.1' if using port mapping
         run: make test
