@@ -1,0 +1,39 @@
+# This workflow will build and test a Golang project
+# It runs when code is pushed to the main branch or a pull request is created for the main branch
+
+name: ci-test
+
+on:
+  # Trigger the workflow on push to the main branch
+  push:
+    branches: [ "main" ]
+  # Also trigger the workflow for pull requests targeting the main branch
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    # The workflow will run on the latest version of Ubuntu
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code from the repository
+      # This step pulls down the latest version of the code from the GitHub repository
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Go environment
+      # We are using the latest version of Go (1.20) in this case, which you can update as needed
+      - name: Set up Go 1.20
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+        id: go
+
+      # Step 3: Run tests
+      # The 'make test' command will automatically handle building and testing the code.
+      # Go automatically compiles the code before running the tests, so no separate build step is needed.
+      # That's why we're skipping the explicit 'go build' step.
+      - name: Run tests
+        run: make test
