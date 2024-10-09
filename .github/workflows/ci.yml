@@ -16,12 +16,33 @@ jobs:
     # The workflow will run on the latest version of Ubuntu
     name: Test
     runs-on: ubuntu-latest
+    services:
+      # Set up a PostgreSQL service using Docker
+      postgres:
+        image: postgres:12-alpine
+        env:
+          POSTGRES_DB: simple_bank
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+        #Ensure PostgreSQL is ready before tests by running healthcheck
+        options: >-
+          --health-cmd "pg_isready -U postgres"  
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        # ports:
+        #   - 5432:5432  
+        # volumes:
+        #   - postgres-data:/var/lib/postgresql/data
 
     steps:
       # Step 1: Check out the code from the repository
       # This step pulls down the latest version of the code from the GitHub repository
       - name: Check out the code
         uses: actions/checkout@v4
+        # to create the correct database shema for our app
+      - name: Run Migrations
+        run: make migrateup
 
       # Step 2: Set up Go environment
       # We are using the latest version of Go (1.20) in this case, which you can update as needed
