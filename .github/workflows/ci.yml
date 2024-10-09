@@ -1,74 +1,66 @@
-# This workflow will build and test a Golang project
-# It runs when code is pushed to the main branch or a pull request is created for the main branch
-
 name: ci-test
-
 on:
-  # Trigger the workflow on push to the main branch
   push:
     branches: [ "main" ]
-  # Also trigger the workflow for pull requests targeting the main branch
   pull_request:
     branches: [ "main" ]
 
 jobs:
   test:
-    # The workflow will run on the latest version of Ubuntu
     name: Test
     runs-on: ubuntu-latest
     services:
-      # Set up a PostgreSQL service using Docker
       postgres:
         image: postgres:12-alpine
         env:
           POSTGRES_DB: simple_bank
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
-        # Ensure PostgreSQL is ready before tests by running healthcheck
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U root"  
+          --health-cmd "pg_isready -U root"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        # Uncomment the following if you face connectivity issues in tests
-        # ports:
-        #   - 5432:5432  
-        # volumes:
-        #   - postgres-data:/var/lib/postgresql/data
 
     steps:
-      # Step 1: Check out the code from the repository
-      # This step pulls down the latest version of the code from the GitHub repository
       - name: Check out the code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Go environment
-      # We are using the latest version of Go (1.20) in this case, which you can update as needed
       - name: Set up Go 1.20
         uses: actions/setup-go@v4
         with:
           go-version: '1.20'
         id: go
 
-      # Step 3: Install golang-migrate
-      # This downloads and installs the appropriate version of golang-migrate
       - name: Install golang-migrate
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz | tar xvz
-          sudo mv migrate /usr/bin/migrate  # Move the extracted binary named 'migrate' to a directory in the PATH
+          sudo mv migrate /usr/bin/migrate
           which migrate
 
-      # Step 4: Run migrations to create the correct database schema for the app
+      - name: Check PostgreSQL connection
+        run: |
+          sudo apt-get install -y postgresql-client
+          PGPASSWORD=${POSTGRES_PASSWORD} psql -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c '\l'
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: simple_bank
+
       - name: Run Migrations
         run: make migrateup
+        env:
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: simple_bank
 
-      # Step 5: Run tests
-      # The 'make test' command will automatically handle building and testing the code.
-      # Go automatically compiles the code before running the tests, so no separate build step is needed.
       - name: Run tests
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: secret
           POSTGRES_DB: simple_bank
-          POSTGRES_HOST: localhost  # or use '127.0.0.1' if using port mapping
+          POSTGRES_HOST: 127.0.0.1
         run: make test
