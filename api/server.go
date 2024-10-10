@@ -27,6 +27,7 @@ func NewServer(store *db.Store) *Server {
 	// Define an HTTP POST route for creating accounts. The handler for this route is the `createAccount` method of the `server`.
 	// When a POST request is sent to `/accounts`, the `createAccount` method is called.
 	router.POST("/accounts", server.createAccount)
+	router.GET("/accounts/:id", server.getAccount)
 
 	// Store the router in the `server` struct, so it can be used when starting the server.
 	server.router = router

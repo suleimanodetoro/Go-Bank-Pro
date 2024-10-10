@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http" // Package for HTTP utilities like status codes
 
 	"github.com/gin-gonic/gin"                          // Gin framework for building web applications
@@ -49,6 +50,42 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	// If everything is successful, return the created account with a `200 OK` status code.
 	// The account object will be automatically marshaled into JSON format by Gin.
+	ctx.JSON(http.StatusOK, account)
+}
+
+type getAccountRequest struct {
+	// Bind the `id` from the URI (URL) to this field.
+	// The `uri:"id"` tag tells Gin to extract the `id` from the URL and bind it to this field.
+	// The `binding:"required,min=1"` ensures that the ID must be present and greater than or equal to 1.
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) getAccount(ctx *gin.Context) {
+	var req getAccountRequest
+
+	// Bind the URI parameters (in this case, the ID) to the `getAccountRequest` struct.
+	// `ShouldBindUri` extracts the `id` parameter from the URL (e.g., /accounts/:id) and binds it to `req.ID`.
+	// If binding fails (e.g., if `id` is missing or invalid), it returns a `400 Bad Request`.
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Fetch the account from the database using the bound ID.
+	account, err := server.store.GetAccount(ctx, req.ID)
+	if err != nil {
+		// If the error indicates that no account was found with the given ID, return `404 Not Found`.
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+
+		// For all other database-related errors, return `500 Internal Server Error`.
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// If the account is found, return it with a `200 OK` response.
 	ctx.JSON(http.StatusOK, account)
 }
 
