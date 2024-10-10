@@ -42,6 +42,9 @@ sqlc:
 test:
 	go test -v -cover ./...
 
+server:
+	go run main.go
+
 # Declare all targets as "phony" to prevent make from confusing them with actual files.
 # This ensures that Make will always run the associated commands when these targets are invoked.
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server
