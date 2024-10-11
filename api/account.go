@@ -89,6 +89,51 @@ func (server *Server) getAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, account)
 }
 
+type listAccountRequest struct {
+	// Bind the `page_id` from the query string (e.g., /accounts?page_id=1) to this field.
+	// The `form:"page_id"` tag tells Gin to extract `page_id` from the query string.
+	// The `binding:"required,min=1"` ensures that the page ID must be provided and be at least 1.
+	PageID int32 `form:"page_id" binding:"required,min=1"`
+
+	// Bind the `page_size` from the query string (e.g., /accounts?page_size=10) to this field.
+	// The `binding:"required,min=5,max=10"` ensures that the page size must be between 5 and 10,
+	// controlling how many results are returned per page.
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) listAccount(ctx *gin.Context) {
+	var req listAccountRequest
+
+	// Bind the query parameters from the URL query string (e.g., /accounts?page_id=1&page_size=10)
+	// to the `listAccountRequest` struct. This will automatically extract and validate the
+	// `page_id` and `page_size` parameters. If the query parameters are invalid or missing,
+	// it returns a `400 Bad Request` response.
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Create the parameters for the database query, including pagination.
+	// `Limit` is the number of results to return per page.
+	// `Offset` calculates where the page starts by multiplying the (PageID - 1) by the PageSize.
+	arg := db.ListAccountsParams{
+		Limit:  req.PageSize,                    // Limit the number of results returned to the specified page size.
+		Offset: (req.PageID - 1) * req.PageSize, // Calculate the offset for pagination.
+	}
+
+	// Fetch the paginated list of accounts from the database.
+	accounts, err := server.store.ListAccounts(ctx, arg)
+	if err != nil {
+		// If there is a database error, return a `500 Internal Server Error` response.
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// If the accounts are successfully retrieved, return them with a `200 OK` status.
+	// The accounts will be automatically serialized into JSON and sent back in the response.
+	ctx.JSON(http.StatusOK, accounts)
+}
+
 /*
 ## Concepts to Master:
 
