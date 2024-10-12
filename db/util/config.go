@@ -11,7 +11,7 @@ type Config struct {
 }
 
 // LoadConfiguration reads configuration from a file at the given path or from environment variables.
-func LoadConfiguration(path string) (config Config, err error) {
+func LoadConfig(path string) (config Config, err error) {
 	viper.AddConfigPath(path)  // Set the path to look for the configuration file.
 	viper.SetConfigName("app") // Name of the config file (without extension).
 	viper.SetConfigType("env") // The type of the config file (in this case, .env format).
