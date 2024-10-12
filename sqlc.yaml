@@ -16,7 +16,7 @@ sql:
         out: "./db/sqlc"
         emit_json_tags: true          # Emit JSON tags for Go struct fields
         emit_prepared_queries: false  # Disable prepared queries for performance
-        emit_interface: false         # Disable interface generation
+        emit_interface: true         # Disable interface generation
         emit_empty_slices: true       # Emit empty slices instead of nil for empty result sets
         sql_package: "database/sql"   # Explicitly use database/sql as the driver
         overrides:
