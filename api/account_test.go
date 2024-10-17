@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,6 +46,23 @@ func TestGetAccountAPI(t *testing.T) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				// Check that the response body matches the account
 				requireBodyMatchAccount(t, recorder.Body, account)
+			},
+		},
+		{
+			name:      "NotFound", // Test case where account is not found
+			accountID: account.ID, // Use the ID of the random account
+			buildStubs: func(store *mockdb.MockStore) {
+				// Set up expected behavior on the mock store
+				// Expect GetAccount to be called with any context and the specific account ID
+				// Return an empty account and sql.ErrNoRows to simulate a "not found" scenario
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(db.Account{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				// Check that the status code is 404 Not Found
+				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
 		// TODO: add more test cases for different scenarios (e.g., NotFound, BadRequest)
