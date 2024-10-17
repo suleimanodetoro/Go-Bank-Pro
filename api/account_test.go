@@ -82,7 +82,21 @@ func TestGetAccountAPI(t *testing.T) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
-		// TODO: add more test cases for different scenarios (e.g., NotFound, BadRequest)
+		{
+			name:      "InvalidID", // Test case for invalid account ID
+			accountID: 0,           // Use an invalid ID (0 is invalid, as IDs start from 1)
+			buildStubs: func(store *mockdb.MockStore) {
+				// No need to set up any expectations on the mock store
+				// The request should be rejected before reaching the store
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				// Check that the status code is 400 Bad Request
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
 	}
 
 	// Loop over each test case and run it as a subtest
