@@ -65,6 +65,23 @@ func TestGetAccountAPI(t *testing.T) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
+		{
+			name:      "InternalError", // Test case for internal server error
+			accountID: account.ID,      // Use the ID of the random account
+			buildStubs: func(store *mockdb.MockStore) {
+				// Set up expected behavior on the mock store
+				// Expect GetAccount to be called with any context and the specific account ID
+				// Return an empty account and sql.ErrConnDone to simulate a database connection error
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				// Check that the status code is 500 Internal Server Error
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
 		// TODO: add more test cases for different scenarios (e.g., NotFound, BadRequest)
 	}
 
