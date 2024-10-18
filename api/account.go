@@ -2,9 +2,11 @@ package api
 
 import (
 	"database/sql"
+	"log"
 	"net/http" // Package for HTTP utilities like status codes
 
-	"github.com/gin-gonic/gin"                          // Gin framework for building web applications
+	"github.com/gin-gonic/gin" // Gin framework for building web applications
+	"github.com/lib/pq"
 	db "github.com/suleimanodetoro/Go-Bank-Pro/db/sqlc" // Importing the db package to access SQLC-generated code for database queries
 )
 
@@ -43,7 +45,24 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	// The `ctx` is passed to allow for context-based cancellations and timeouts, which can be useful in high-load scenarios.
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
-		// If the database query fails, return a `500 Internal Server Error` HTTP status code along with the error message.
+		// If there is a database error, check if it's a PostgreSQL-specific error.
+		if pqErr, ok := err.(*pq.Error); ok {
+			// Log the error code and message for debugging purposes.
+			// This is particularly useful for handling database-specific errors like unique constraint violations.
+			log.Printf("PostgreSQL Error Code: %s, Message: %s", pqErr.Code, pqErr.Message)
+
+			// Handle specific PostgreSQL error codes
+			switch pqErr.Code.Name() {
+			case "unique_violation":
+				ctx.JSON(http.StatusConflict, errorResponse(err)) // Use 409 Conflict for unique constraint violations
+				return
+			case "foreign_key_violation":
+				ctx.JSON(http.StatusBadRequest, errorResponse(err)) // Use 400 Bad Request for foreign key constraint violations
+				return
+			}
+		}
+
+		// For all other database errors, return a 500 Internal Server Error
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
