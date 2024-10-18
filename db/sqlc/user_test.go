@@ -12,10 +12,12 @@ import (
 // CreateRandomUser generates and inserts a random user into the database for test purposes.
 // This helper function focuses on setting up data, not performing assertions.
 func CreateRandomUser(t *testing.T) User {
+	hashedPassword, err := util.HashPassword(util.RandomString(6))
+	require.NoError(t, err)
 	// Prepare the parameters to create a user
 	arg := CreateUserParams{
 		Username:       util.RandomOwner(),
-		HashedPassword: "secret",
+		HashedPassword: hashedPassword,
 		FullName:       util.RandomOwner(),
 		Email:          util.RandomEmail(),
 	}
