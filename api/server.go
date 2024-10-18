@@ -33,6 +33,7 @@ func NewServer(store db.Store) *Server {
 	router.GET("/accounts/:id", server.getAccount)   // Route for fetching a single account by ID.
 	router.GET("/accounts", server.listAccount)      // Route for listing accounts with optional pagination.
 	router.POST("/transfers", server.createTransfer) // Route for creating a transfer
+	router.POST("/users", server.createUser)         // Route for creating a user
 
 	server.router = router // Assign the router to the server instance.
 	return server
