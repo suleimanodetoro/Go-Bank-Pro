@@ -10,11 +10,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	mockdb "github.com/suleimanodetoro/Go-Bank-Pro/db/mock"
 	db "github.com/suleimanodetoro/Go-Bank-Pro/db/sqlc"
 	"github.com/suleimanodetoro/Go-Bank-Pro/db/util"
-	"go.uber.org/mock/gomock"
 )
 
 // TestGetAccountAPI tests the GetAccount API endpoint.
