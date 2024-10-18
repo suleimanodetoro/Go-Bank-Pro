@@ -1,7 +1,9 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"                          // Gin framework for HTTP routing and middleware
+	"github.com/gin-gonic/gin" // Gin framework for HTTP routing and middleware
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	db "github.com/suleimanodetoro/Go-Bank-Pro/db/sqlc" // SQLC-generated package for database interaction
 )
 
@@ -20,6 +22,11 @@ func NewServer(store db.Store) *Server {
 	}
 
 	router := gin.Default() // Initialize a new Gin router with logging and recovery middleware.
+
+	// Force the validator to initialize
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
 
 	// Define the routes for the server, mapping HTTP methods to handler functions.
 	router.POST("/accounts", server.createAccount)   // Route for creating an account.

@@ -40,9 +40,14 @@ func RandomMoney() int64 {
 
 }
 
+// RandomCurrency returns a random supported currency from the list of constants
 func RandomCurrency() string {
-	currencies := []string{"USD", "EUR", "GBP"}
+	// Create a slice of the supported currencies using the constants
+	currencies := []string{
+		USD, EUR, JPY, GBP, AUD, CAD, CHF, CNY, HKD, NZD,
+		SEK, KRW, SGD, NOK, MXN, INR, RUB, ZAR, TRY, BRL,
+	}
+	// Generate a random index to select a currency
 	n := len(currencies)
 	return currencies[rand.Intn(n)]
-
 }

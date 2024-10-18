@@ -14,10 +14,10 @@ import (
 // for creating a new transfer. We use `binding` tags to enforce validation rules
 // and ensure only valid data reaches our application.
 type transferRequest struct {
-	FromAccountID int64  `json:"from_account_id" binding:"required,min=1"`      // ID of the account to transfer from, must be positive
-	ToAccountID   int64  `json:"to_account_id" binding:"required,min=1"`        // ID of the account to transfer to, must be positive
-	Amount        int64  `json:"amount" binding:"required,gt=0"`                // Amount to transfer, must be greater than 0
-	Currency      string `json:"currency" binding:"required,oneof=USD EUR CAD"` // Currency of the transfer, limited to USD, EUR, or CAD
+	FromAccountID int64  `json:"from_account_id" binding:"required,min=1"` // ID of the account to transfer from, must be positive
+	ToAccountID   int64  `json:"to_account_id" binding:"required,min=1"`   // ID of the account to transfer to, must be positive
+	Amount        int64  `json:"amount" binding:"required,gt=0"`           // Amount to transfer, must be greater than 0
+	Currency      string `json:"currency" binding:"required,currency"`     // Currency of the transfer, limited to USD, EUR, or CAD
 }
 
 // The `createTransfer` function handles the creation of a new transfer.
