@@ -13,8 +13,8 @@ func TestTransferTx(t *testing.T) {
 	store := NewStore(testDB)
 
 	// Create two random accounts
-	account1 := CreateRandomAccount(t)
-	account2 := CreateRandomAccount(t)
+	account1 := createRandomAccount(t) // Updated function name
+	account2 := createRandomAccount(t) // Updated function name
 
 	fmt.Println(">>before transactions: ", account1.Balance, account2.Balance)
 
@@ -127,8 +127,8 @@ func TestTransferTxDeadlock(t *testing.T) {
 	store := NewStore(testDB)
 
 	// Create two random accounts
-	account1 := CreateRandomAccount(t)
-	account2 := CreateRandomAccount(t)
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
 
 	fmt.Println(">>before transactions: ", account1.Balance, account2.Balance)
 

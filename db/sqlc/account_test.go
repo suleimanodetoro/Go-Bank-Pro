@@ -9,26 +9,30 @@ import (
 	"github.com/suleimanodetoro/Go-Bank-Pro/db/util"
 )
 
-// CreateRandomAccount generates and inserts a random account into the database for test purposes.
-// This helper function focuses on setting up data, not performing assertions.
-func CreateRandomAccount(t *testing.T) Account {
+// createRandomAccount generates and inserts a random account into the database for test purposes.
+func createRandomAccount(t *testing.T) Account {
+	// Create a random user first
+	user := CreateRandomUser(t)
+
 	// Prepare the parameters to create an account
 	arg := CreateAccountParams{
-		Owner:    util.RandomOwner(),
+		Owner:    user.Username, // Use the created user's username
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
 
 	// Insert the account into the database
 	account, err := testQueries.CreateAccount(context.Background(), arg)
-	require.NoError(t, err) // Ensure no error occurred during account creation
-	return account          // Return the created account for use in tests
+	require.NoError(t, err)      // Ensure no error occurred during account creation
+	require.NotEmpty(t, account) // Ensure the created account is not empty
+
+	return account // Return the created account for use in tests
 }
 
 // TestCreateAccount tests the account creation functionality.
 func TestCreateAccount(t *testing.T) {
 	// Use the helper to create a random account
-	account := CreateRandomAccount(t)
+	account := createRandomAccount(t)
 
 	// Perform assertions on the created account
 	require.NotEmpty(t, account)          // Assert that the account is not empty
@@ -41,7 +45,7 @@ func TestCreateAccount(t *testing.T) {
 // TestGetAccount tests retrieving an account from the database by ID.
 func TestGetAccount(t *testing.T) {
 	// Create a new random account to retrieve
-	account1 := CreateRandomAccount(t)
+	account1 := createRandomAccount(t)
 
 	// Retrieve the account from the database using its ID
 	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
@@ -66,14 +70,14 @@ func TestCreateAccountWithInvalidData(t *testing.T) {
 
 	// Attempt to create the account and expect an error
 	account, err := testQueries.CreateAccount(context.Background(), arg)
-	require.Error(t, err)     // Expect an error due to invalid data
-	require.Empty(t, account) // The account should not have been created
+	require.Error(t, err)                  // Expect an error due to invalid data
+	require.Equal(t, int64(0), account.ID) // Ensure account was not created (ID should be zero)
 }
 
 // TestUpdateAccount tests updating the balance of an existing account.
 func TestUpdateAccount(t *testing.T) {
 	// Create a random account
-	account1 := CreateRandomAccount(t)
+	account1 := createRandomAccount(t)
 
 	// Set a new balance different from the original one
 	newBalance := util.RandomMoney()
@@ -103,14 +107,14 @@ func TestUpdateAccountWithInvalidID(t *testing.T) {
 
 	// Attempt to update and expect an error
 	account, err := testQueries.UpdateAccount(context.Background(), arg)
-	require.Error(t, err)     // Expect an error due to invalid ID
-	require.Empty(t, account) // The update should not succeed
+	require.Error(t, err)                  // Expect an error due to invalid ID
+	require.Equal(t, int64(0), account.ID) // Ensure update was not successful
 }
 
 // TestDeleteAccount tests deleting an account and verifying it no longer exists.
 func TestDeleteAccount(t *testing.T) {
 	// Create a random account to delete
-	account1 := CreateRandomAccount(t)
+	account1 := createRandomAccount(t)
 
 	// Delete the account by its ID
 	err := testQueries.DeleteAccount(context.Background(), account1.ID)
@@ -118,17 +122,18 @@ func TestDeleteAccount(t *testing.T) {
 
 	// Attempt to retrieve the deleted account
 	account2, err2 := testQueries.GetAccount(context.Background(), account1.ID)
-	require.Error(t, err2)     // Expect an error since the account should no longer exist
-	require.Empty(t, account2) // The account object should be empty
+	require.Error(t, err2)                  // Expect an error since the account should no longer exist
+	require.Equal(t, int64(0), account2.ID) // The account should not exist
 }
 
+// TestListAccounts tests listing accounts from the database.
 func TestListAccounts(t *testing.T) {
 	// Create 5 random accounts first
 	for i := 0; i < 5; i++ {
-		CreateRandomAccount(t)
+		createRandomAccount(t)
 	}
 
-	// Prepare the parameters to list accounts (limiting to 5 results with an offset of 5)
+	// Prepare the parameters to list accounts (limiting to 5 results with an offset of 0)
 	arg := ListAccountsParams{
 		Limit:  5,
 		Offset: 0, // Offset should typically start from 0 to list the first 5 results
