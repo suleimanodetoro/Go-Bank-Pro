@@ -22,9 +22,10 @@ func NewServer(store db.Store) *Server {
 	router := gin.Default() // Initialize a new Gin router with logging and recovery middleware.
 
 	// Define the routes for the server, mapping HTTP methods to handler functions.
-	router.POST("/accounts", server.createAccount) // Route for creating an account.
-	router.GET("/accounts/:id", server.getAccount) // Route for fetching a single account by ID.
-	router.GET("/accounts", server.listAccount)    // Route for listing accounts with optional pagination.
+	router.POST("/accounts", server.createAccount)   // Route for creating an account.
+	router.GET("/accounts/:id", server.getAccount)   // Route for fetching a single account by ID.
+	router.GET("/accounts", server.listAccount)      // Route for listing accounts with optional pagination.
+	router.POST("/transfers", server.createTransfer) // Route for creating a transfer
 
 	server.router = router // Assign the router to the server instance.
 	return server
