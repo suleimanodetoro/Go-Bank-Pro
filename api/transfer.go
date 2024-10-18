@@ -1,7 +1,10 @@
 package api
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/suleimanodetoro/Go-Bank-Pro/db/sqlc"
@@ -32,6 +35,14 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
+	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
+		return
+	}
+
+	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
+		return
+	}
+
 	// The `db.TransferTxParams` struct is an SQLC-generated struct that defines the parameters required
 	// to create a new transfer in the database. It includes the source and destination account IDs and the transfer amount.
 	arg := db.TransferTxParams{
@@ -52,4 +63,34 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	// If the transfer is successful, return the result with a `200 OK` status code.
 	// The result object will be automatically marshaled into JSON format by Gin.
 	ctx.JSON(http.StatusOK, result)
+}
+
+// validAccount checks if an account exists and has the correct currency.
+// It returns true if the account is valid, false otherwise.
+// This function also handles sending appropriate error responses via the Gin context.
+func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string) bool {
+	// Attempt to retrieve the account from the database
+	account, err := server.store.GetAccount(ctx, accountID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// If the account doesn't exist, return a 404 Not Found error
+			ctx.JSON(http.StatusNotFound, errorResponse(fmt.Errorf("account %d not found", accountID)))
+			return false
+		}
+		// For any other database error, return a 500 Internal Server Error
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("error fetching account %d: %v", accountID, err)))
+		return false
+	}
+
+	// Check if the account's currency matches the transfer currency
+	// Using EqualFold for case-insensitive string comparison
+	if !strings.EqualFold(account.Currency, currency) {
+		// If currencies don't match, return a 400 Bad Request error
+		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", accountID, account.Currency, currency)
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return false
+	}
+
+	// If all checks pass, return true indicating a valid account
+	return true
 }
