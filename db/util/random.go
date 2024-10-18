@@ -35,9 +35,7 @@ func RandomOwner() string {
 
 // Create random amount of money
 func RandomMoney() int64 {
-
 	return RandomInt(0, 100)
-
 }
 
 // RandomCurrency returns a random supported currency from the list of constants
@@ -49,5 +47,5 @@ func RandomCurrency() string {
 	}
 	// Generate a random index to select a currency
 	n := len(currencies)
-	return currencies[rand.Intn(n)]
+	return currencies[rng.Intn(n)]
 }

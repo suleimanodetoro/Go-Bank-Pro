@@ -1,7 +1,5 @@
 package util
 
-import "math/rand"
-
 // Constants for supported currencies
 // These represent some of the world's most widely used and traded currencies
 const (
@@ -27,14 +25,11 @@ const (
 	BRL = "BRL" // Brazilian Real
 )
 
-// RandomCurrency returns a random supported currency from the list of constants
-func RandomCurrency() string {
-	// Create a slice of the supported currencies using the constants
-	currencies := []string{
-		USD, EUR, JPY, GBP, AUD, CAD, CHF, CNY, HKD, NZD,
-		SEK, KRW, SGD, NOK, MXN, INR, RUB, ZAR, TRY, BRL,
+// IsSupportedCurrency returns true if the currency is supported
+func IsSupportedCurrency(currency string) bool {
+	switch currency {
+	case USD, EUR, JPY, GBP, AUD, CAD, CHF, CNY, HKD, NZD, SEK, KRW, SGD, NOK, MXN, INR, RUB, ZAR, TRY, BRL:
+		return true
 	}
-	// Generate a random index to select a currency
-	n := len(currencies)
-	return currencies[rand.Intn(n)]
+	return false
 }
