@@ -9,9 +9,9 @@ import (
 	"github.com/suleimanodetoro/Go-Bank-Pro/db/util"
 )
 
-// CreateRandomUser generates and inserts a random user into the database for test purposes.
+// createRandomUser generates and inserts a random user into the database for test purposes.
 // This helper function focuses on setting up data, not performing assertions.
-func CreateRandomUser(t *testing.T) User {
+func createRandomUser(t *testing.T) User {
 	hashedPassword, err := util.HashPassword(util.RandomString(6))
 	require.NoError(t, err)
 	// Prepare the parameters to create a user
@@ -42,13 +42,13 @@ func CreateRandomUser(t *testing.T) User {
 // TestCreateUser tests the user creation functionality.
 func TestCreateUser(t *testing.T) {
 	// Use the helper to create a random user
-	CreateRandomUser(t)
+	createRandomUser(t)
 }
 
 // TestGetUser tests retrieving a user from the database by username.
 func TestGetUser(t *testing.T) {
 	// Create a new random user to retrieve
-	user1 := CreateRandomUser(t)
+	user1 := createRandomUser(t)
 
 	// Retrieve the user from the database using its username
 	user2, err := testQueries.GetUser(context.Background(), user1.Username)

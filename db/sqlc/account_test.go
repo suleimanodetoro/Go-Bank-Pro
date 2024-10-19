@@ -12,7 +12,7 @@ import (
 // createRandomAccount generates and inserts a random account into the database for test purposes.
 func createRandomAccount(t *testing.T) Account {
 	// Create a random user first
-	user := CreateRandomUser(t)
+	user := createRandomUser(t)
 
 	// Prepare the parameters to create an account
 	arg := CreateAccountParams{
